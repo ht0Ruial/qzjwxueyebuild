@@ -165,7 +165,7 @@ for i in (1, 2, 5, 7, 11, 12):
 
 # 课程部分
 
-if len(last_course) > len(now_course):
+if len(last_course)/5 > len(now_course)/4:
     max_len = len(last_course)/5
 else:
     max_len = len(now_course)/4
