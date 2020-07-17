@@ -15,7 +15,7 @@ try:
 
 except Exception as e:
     print(usage)
-    sys.exit()
+    sys.exit(0)
     
 
 
