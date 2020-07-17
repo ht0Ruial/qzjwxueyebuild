@@ -1,6 +1,7 @@
 from docx import Document
 from docxtpl import DocxTemplate
 from docx.shared import Pt
+from docx.shared import RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from os import remove
 from os.path import dirname
@@ -24,7 +25,7 @@ def adbold(run):
 
 # 处理拼接问题
 
-def do_pj(i, j, list):
+def do_pj(i, j, list,color=False):
     cell = table.cell(i, j)
     run = cell.paragraphs[0].add_run(list)
     run.font.size = Pt(12)  # 宋体小四
@@ -32,6 +33,8 @@ def do_pj(i, j, list):
         fontsize(run)  # 宋体五号
     if i in (1, 11):
         adbold(run)  # 加粗
+    if color == True:
+        run.font.color.rgb = RGBColor(255, 0, 0)
 
 
 # 新增单元格并合并
@@ -86,7 +89,7 @@ list_b = [
     0, 8,  # 8专业其他
     0,  # 9科技活动
     0, 14,  # 10学籍
-    0, 3, 5, 7, 8, 10, 11, 12, 13, 14,  # 课程
+    0, 3, 5, 7, 8, 10, 11, 12, 13, 14,  # 13课程
     0  # 防溢出
 ]
 list_c = ['学生毕业要求及本人情况对照', '其他毕业要求及学籍异动', '课程类别', '学分要求', '取得学分',
@@ -103,6 +106,11 @@ for i in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13):  # 从0到学籍10那一行,再
     if i > 2 and i < 10:
         cell = table.cell(i, 4)
         run = cell.paragraphs[0].add_run(list_info[i+5])
+        if i < 10 :
+            for l in (2,6):
+                cell = table.cell(i,l)
+                run = cell.paragraphs[0].add_run('null')
+                run.font.color.rgb = RGBColor(255, 0, 0)
 
     for j in list_b[k+1:]:
         k += 1
@@ -130,18 +138,18 @@ for i in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13):  # 从0到学籍10那一行,再
 list_b.clear()
 list_c.clear()
 list_b = [
-    6, 14,
-    14,
-    13, 14,  # 双语
-    14,  # 专必GPA
-    6, 7, 8, 12, 13, 14,  # 学期
+    5, 6, 13,
+    13,
+    11, 13, 14,  # 双语
+    13,  # 专必GPA
+    6, 7, 8, 10, 12, 13,  # 学期
     6, 7, 8, 13, 14,
     0  # 防溢出
 ]
 list_c = [
-    '毕业总学分要求≥        ，目前已取得总学分：     ', '',
+    '毕业总学分要求≥  ','  ，目前已取得总学分：', '',
     '要求：GPA ≥ 2.00     目前GPA：',
-    '要求修读门数：    已修读门数：', '      欠修门数：   ',
+    '要求修读门数：','   已修读门数：', '     欠修门数：',
     '学位要求：GPA ≥ 2.20        目前GPA：',
     '一、上学期即', '学年第', '学期学习执行情况', '二、本学期即', '学年第', '学期修读的课程',
     '取得总学分：', '  ；截止到目前GPA（取得学分）：', '  ；截止到目前GPA（所有课程）：',
@@ -149,13 +157,18 @@ list_c = [
     '',
 ]
 
+
 k = -1
 for i in (1, 2, 5, 7, 11, 12):
 
     for j in list_b[k+1:]:
         k += 1
         do_pj(i, j, list_c[k])
-        do_pj(i, j, list_mo_info[k])
+        if j in (5,11,14): #上色表格的纵坐标5，11，14
+            color = True
+        else:
+            color = False
+        do_pj(i, j, list_mo_info[k],color)
 
         if i == 11:
             cell.paragraphs[0].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER

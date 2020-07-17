@@ -9,7 +9,7 @@ import base64
 import re
 import sys
 
-# 登录
+
 user_agent = [
     "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1",
@@ -32,18 +32,18 @@ headers = {
 }
 
 
-try:
+try: 
 # 获取信息
 
     list_info = []  # info列表
     list_test = []  # 临时列表
-    flag = False
 
-
+    # 登录
     def login():
         LOGIN_URL = "http://qzjw.xxxedu.edu.cn/jsxsd/xk/LoginToXk"
 
         values = {}
+
         values['userAccoun'] = username
         values['userPassword'] = ''
         st = base64.b64encode(bytes(username, 'utf8')).decode()+'%%%'+base64.b64encode(bytes(password, 'utf8')).decode()
@@ -90,7 +90,7 @@ try:
 
 
     #去除成绩列表中的不需要的数据
-    def cjcx_rule(soup):
+    def cjcx_rule(soup, flag=False):
         list_test = []
         list_cont = []
         list_out = []
@@ -120,7 +120,6 @@ try:
                     list_out.append(list_test[j])
                 for k in range(i*12,i*12+12):
                     list_out.append(list_cont[k])
-        
         return list_out
 
 
@@ -162,8 +161,7 @@ try:
     if soup.find('title').decode()[10:12] == "信息" and soup.status_code != 404:
         print("\n ",username, "登录成功\n")
     else:
-        print("\n学号或密码错误，请稍后重试！")
-        print("Please check your studentid or password.\n")
+        print("\n学号或密码错误，请稍后重试！\n")
         sys.exit(0)
 
 
@@ -212,7 +210,8 @@ try:
         'http://qzjw.xxxedu.edu.cn/jsxsd/xxwcqk/xxwcqkOnkclb.do', postdata, headers)
 
     list_test.clear()
-    list_test = find_tag(soup, "td", {"align": "center"})
+    list_test = cjcx_rule(soup, flag = True)
+
     # 正修读学分
     list_info.append('{:g}'.format(float(list_test[35])))
 
@@ -224,7 +223,6 @@ try:
 
 
     # 获取当前学期上课课程
-    flag = True
     values.clear()
     list_test.clear()
     now_course = []
@@ -233,11 +231,10 @@ try:
     soup = post_soup(
         'http://qzjw.xxxedu.edu.cn/jsxsd/xkgl/loadXsxkjgList', postdata, headers)
 
-    list_test = cjcx_rule(soup)
+    list_test = cjcx_rule(soup, flag = True)
     for i in range(0, len(list_test), 11):
         for j in (i+10, i+2, i+1, i+8): #课程性质、编号、名称、学分
             now_course.append(list_test[j])
-    flag = False  #flag状态还原
 
 
 
@@ -264,8 +261,10 @@ try:
     kcxz = ['01', '15', '16', '05', '07', '09', '10']
     xf_num = float()  # 总学分
     for i in kcxz:
-        values['kksj'] = ''
-        values['kcxz'] = i
+        values['kksj'] = '' #开课时间 
+        values['kcmc'] = ''  # 课程名称
+        values['xsfs'] = 'max' # 显示方式
+        values['kcxz'] = i     # 课程性质
         postdata = parse.urlencode(values).encode('utf-8')
         soup = post_soup(
             'http://qzjw.xxxedu.edu.cn/jsxsd/kscj/cjcx_list', postdata, headers)
@@ -285,7 +284,10 @@ try:
     list_info.append("{:g}".format(xf_num))
 
     # GPA、专业必修GPA
-    values['kcxz'] = ''
+    values['kksj'] = '' #开课时间
+    values['kcxz'] = ''  # 课程性质
+    values['kcmc'] = ''  # 课程名称
+    values['xsfs'] = 'max'  # 显示方式
     postdata = parse.urlencode(values).encode('utf-8')
     soup = post_soup(
         'http://qzjw.xxxedu.edu.cn/jsxsd/kscj/cjcx_list', postdata, headers)
@@ -294,9 +296,9 @@ try:
     qudexfGPA, allxfGPA = getGPA(list_test)  # 取得学分,所有课程学分
 
     list_mo_info = [
-        list_info[15], '', str(allxfGPA), str(en_course_num), '', str(
-            zballGPA), last_xnxqh[:9], last_xnxqh[-1:], '', xnxqh[:9], xnxqh[-1:], '',
-        list_info[15], str(qudexfGPA), str(allxfGPA), list_info[7], '',
+    'null',list_info[15], '', str(allxfGPA), 'null',str(en_course_num), 'null', str(
+        zballGPA), last_xnxqh[:9], last_xnxqh[-1:], '', xnxqh[:9], xnxqh[-1:], '',
+    list_info[15], str(qudexfGPA), str(allxfGPA), list_info[7], 'null',
     ]
     
 except Exception as e:

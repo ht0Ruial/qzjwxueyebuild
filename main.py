@@ -3,11 +3,12 @@ from assets import builddocx
 
 usage = """
 
-Usage: python %s studentid password
+Usage: python %s Studentid Password
 
-Please enter your studentid or password.
+Studentid ：学号
+Password  ：强智教务系统密码
 
-"""    % sys.argv[0]
+"""   % sys.argv[0]
 try:
     username = sys.argv[1]
 
