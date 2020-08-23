@@ -198,34 +198,11 @@ try:
     last_xnxqh = list_test[list_test.index(xnxqh)+1]  # 上个学期
 
 
-    # 学分情况
-    soup = get_soup(
-        'http://qzjw.xxxedu.edu.cn/jsxsd/xxwcqk/xxwcqk_idxOnlb.do', headers)
-    ndzydm = soup.find('input', type="hidden")["value"]
-
+    # 获取当前学期上课课程及学分
     values = {}
-    values['ndzydm'] = ndzydm
-    postdata = parse.urlencode(values).encode('utf-8')
-    soup = post_soup(
-        'http://qzjw.xxxedu.edu.cn/jsxsd/xxwcqk/xxwcqkOnkclb.do', postdata, headers)
-
-    list_test.clear()
-    list_test = cjcx_rule(soup, flag = True)
-
-    # 正修读学分
-    list_info.append('{:g}'.format(float(list_test[35])))
-
-    # 获取双语课程en_course_num数目
-    en_course_num = 0
-    for i in range(len(list_test)):  # 获取双语课程的列表下标
-        if '双语' in list_test[i] and list_test[i+4] != '修读中':
-            en_course_num += 1
-
-
-    # 获取当前学期上课课程
-    values.clear()
     list_test.clear()
     now_course = []
+    now_course_xf = float()
     values['xnxqid'] = xnxqh
     postdata = parse.urlencode(values).encode('utf-8')
     soup = post_soup(
@@ -233,17 +210,32 @@ try:
 
     list_test = cjcx_rule(soup, flag = True)
     for i in range(0, len(list_test), 11):
+        now_course_xf += float(list_test[i+8])
         for j in (i+10, i+2, i+1, i+8): #课程性质、编号、名称、学分
             now_course.append(list_test[j])
 
+    list_info.append('{:g}'.format(now_course_xf))
+
+
+    #获取双语课程en_course_num数目
+    values.clear()
+    list_test.clear()
+    values['kksj'] = ''  #开课时间
+    values['kcxz'] = ''  # 课程性质
+    values['kcmc'] = '双语'  # 课程名称
+    values['xsfs'] = 'max'  # 显示方式
+    postdata = parse.urlencode(values).encode('utf-8')
+    soup = post_soup(
+        'http://qzjw.xxxedu.edu.cn/jsxsd/kscj/cjcx_list', postdata, headers)
+
+    list_test = cjcx_rule(soup)
+    en_course_num = int(len(list_test) / 18 )
 
 
     # 获取上个学期课程及成绩
     last_course = []
-    values.clear()
     list_test.clear()
-
-    values['kksj'] = last_xnxqh  #开课时间
+    values['kksj'] = last_xnxqh  # 开课时间 
     values['kcxz'] = ''  # 课程性质
     values['kcmc'] = ''  # 课程名称
     values['xsfs'] = 'max'  # 显示方式
@@ -257,7 +249,6 @@ try:
             last_course.append(list_test[j])
 
     # 公必01、公选15、专必16、专选05、实践07、创导09、课外科技10
-    values.clear()
     kcxz = ['01', '15', '16', '05', '07', '09', '10']
     xf_num = float()  # 总学分
     for i in kcxz:
