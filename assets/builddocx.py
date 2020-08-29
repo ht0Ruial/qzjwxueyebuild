@@ -101,16 +101,14 @@ list_c = ['学生毕业要求及本人情况对照', '其他毕业要求及学�
           '课程类型', '课程代码', '课程名称', '成绩等级', '取得学分', '课程类型', '课程代码', '课程名称', '学分', '备注（初修/重修/辅修其它专业课程',
           ]
 k = -1
+lx_num = 8 
 for i in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13):  # 从0到学籍10那一行,再加个13
 
     if i > 2 and i < 10:
-        cell = table.cell(i, 4)
-        run = cell.paragraphs[0].add_run(list_info[i+5])
-        if i < 10 :
-            for l in (2,6):
-                cell = table.cell(i,l)
-                run = cell.paragraphs[0].add_run('null')
-                run.font.color.rgb = RGBColor(255, 0, 0)
+        for l in (2, 4, 6):
+            cell = table.cell(i, l)
+            run = cell.paragraphs[0].add_run(list_info[lx_num])
+            lx_num +=1
 
     for j in list_b[k+1:]:
         k += 1
@@ -164,7 +162,7 @@ for i in (1, 2, 5, 7, 11, 12):
     for j in list_b[k+1:]:
         k += 1
         do_pj(i, j, list_c[k])
-        if j in (5,11,14): #上色表格的纵坐标5，11，14
+        if j in (11,14): #上色表格的纵坐标11，14
             color = True
         else:
             color = False
