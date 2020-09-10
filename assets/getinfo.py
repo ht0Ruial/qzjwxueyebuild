@@ -88,7 +88,7 @@ try:
 
     # 去除成绩列表中的不需要的数据
 
-    def cjcx_rule(soup, flag=False):
+    def cjcx_rule(soup, flag=False, kk=False):
         list_test = []
         list_cont = []
         list_out = []
@@ -104,6 +104,9 @@ try:
                 list_test.append(res_k)
 
         if flag == True:
+            if kk ==True:
+                list_test.append(soup.find('input', id='xm')["value"])
+                list_test.append(soup.find('input', id='xb')["value"])
             list_out = list_test
         else:
             # 成绩查询的数据处理
@@ -179,17 +182,16 @@ try:
         soup = get_soup(
             'https://qzjw.xxxedu.edu.cn/jsxsd/bygl/bysxx', headers)
         list_test = []
-        list_test.append(soup.find('input', id='xm')["value"])  # 获取名字
-        list_test.extend(find_tag(soup, "td", {"align": "center"}))
+        list_test = cjcx_rule(soup, flag=True, kk=True) 
 
-        for i in (17, 0, 12, 8, 2, 4,):  # 学号、名字、性别、层次、学院、专业
-            if i == 17:  # 获取年级
+        for i in (24, 43, 44, 14, 8, 10,):  # 学号、名字、性别、层次、学院、专业
+            if i == 24:  # 获取年级
                 a = list_test[i][:4]
                 list_info.append(a)
                 list_info.append(list_test[i])
-            elif i == 8:
+            elif i == 14:
                 list_info.append(list_test[i][2:])
-            elif i == 4:
+            elif i == 10:
                 list_info.append(list_test[i][3:])
             else:
                 list_info.append(list_test[i])
@@ -228,7 +230,7 @@ try:
         values['xsfs'] = 'max'  # 显示方式
         postdata = parse.urlencode(values).encode('utf-8')
         soup = post_soup(
-            'http://qzjw.xxxedu.edu.cn/jsxsd/kscj/cjcx_list', postdata, headers)
+            'https://qzjw.xxxedu.edu.cn/jsxsd/kscj/cjcx_list', postdata, headers)
 
         list_test = cjcx_rule(soup)
         for i in range(0, len(list_test), 18):
@@ -246,7 +248,7 @@ try:
         values['xsfs'] = 'max'  # 显示方式
         postdata = parse.urlencode(values).encode('utf-8')
         soup = post_soup(
-            'http://qzjw.xxxedu.edu.cn/jsxsd/kscj/cjcx_list', postdata, headers)
+            'https://qzjw.xxxedu.edu.cn/jsxsd/kscj/cjcx_list', postdata, headers)
 
         list_test = cjcx_rule(soup)
         en_course_num = int(len(list_test) / 18)

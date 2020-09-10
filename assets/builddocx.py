@@ -37,7 +37,7 @@ def do_pj(i, j, list,color=False):
         run.font.color.rgb = RGBColor(255, 0, 0)
 
 
-# 新增单元格并合并
+# 新增单元格合并
 
 def addrow_merge(table, i, list_te):
     table.add_row().cells
@@ -201,7 +201,7 @@ for i in range(14, table_len+1):
             do_cell_center(table, i, k, now_course, b_num)
             b_num += 1
         cell = table.cell(i, 14)
-        run = cell.paragraphs[0].add_run('初修')
+        run = cell.paragraphs[0].add_run('初修') #默认初修
         run.font.size = Pt(12)  # 宋体小四
         cell.paragraphs[0].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
