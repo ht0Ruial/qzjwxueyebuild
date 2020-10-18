@@ -105,8 +105,8 @@ try:
 
         if flag == True:
             if kk ==True:
-                list_test.append(soup.find('input', id='xm')["value"])
-                list_test.append(soup.find('input', id='xb')["value"])
+                list_test[26] = soup.find('input', id='xm')["value"] #26 名字
+                list_test[18] = soup.find('input', id='xb')["value"] #18 性别
             list_out = list_test
         else:
             # 成绩查询的数据处理
@@ -184,7 +184,7 @@ try:
         list_test = []
         list_test = cjcx_rule(soup, flag=True, kk=True) 
 
-        for i in (24, 43, 44, 14, 8, 10,):  # 学号、名字、性别、层次、学院、专业
+        for i in (24, 26, 18, 14, 8, 10,):  # 学号、名字、性别、层次、学院、专业
             if i == 24:  # 获取年级
                 a = list_test[i][:4]
                 list_info.append(a)
