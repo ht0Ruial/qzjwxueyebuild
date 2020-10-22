@@ -266,6 +266,13 @@ try:
         soup = post_soup(
             'https://qzjw.xxxedu.edu.cn/jsxsd/kscj/cjcx_list', postdata, headers)
         list_test = cjcx_rule(soup)
+
+        ##移除当前学期思政实践课程，不算入GPA
+        if remove_szxf_flag:
+            num= list_test.index("思想政治理论课社会实践")
+            del list_test[num-3:num+14]
+            list_test.pop(num-3)
+
         qudexfGPA, allxfGPA = getGPA(list_test)  # 取得学分GPA,所有课程学分GPA
 
         values['kcxz'] = '16'     # 专业必修
@@ -281,21 +288,6 @@ try:
     def get_xf():
         global list_info
         values = {}
-        values['kksj'] = ''  # 开课时间
-        values['kcxz'] = ''  # 课程性质
-        values['kcmc'] = '奖励学分'  # 课程名称
-        values['xsfs'] = 'max'  # 显示方式
-        postdata = parse.urlencode(values).encode('utf-8')
-        soup = post_soup(
-            'https://qzjw.xxxedu.edu.cn/jsxsd/kscj/cjcx_list', postdata, headers)
-        list_tests = cjcx_rule(soup)
-        list_test = [list_tests[i:i+18]for i in range(0, len(list_tests), 18)]
-        gx_jlxf = cd_jlxf = 0
-        for i in range(len(list_test)):
-            if '公选' in list_test[i][16]:
-                gx_jlxf += float(list_test[i][9])
-            elif '创业就业' in list_test[i][16]:
-                cd_jlxf += float(list_test[i][9])
 
         # 学分情况  学习完成情况查看(性质)
         soup = get_soup(
@@ -319,10 +311,8 @@ try:
             c_test = float(list_test[i][2])  # 该类课程已取得学分
 
             list_info.append("{:g}".format(b_test))
-            if i == 2:
-                c_test = float(list_test[i][2]) + gx_jlxf  # 公选课程+奖励学分
-            elif i == 0:
-                c_test = float(list_test[i][2]) + cd_jlxf  # 创导课程+奖励学分
+            if i ==4 and remove_szxf_flag :
+                c_test -= 2
 
             qude_allxf += c_test
             list_info.append("{:g}".format(c_test))
@@ -336,6 +326,24 @@ try:
         list_info.append("{:g}".format(float(list_test[7][1])))  # 毕业总学分
 
         return 0
+
+    # 去除思政实践学分
+    def remove_flag():
+        values = {}
+        values['kksj'] = xnxqh #开课时间
+        values['kcxz'] = ''  # 课程性质
+        values['kcmc'] = '思想政治理论课社会实践'  # 课程名称
+        values['xsfs'] = 'max'  # 显示方式
+        postdata = parse.urlencode(values).encode('utf-8')
+        soup = post_soup(
+            'https://qzjw.xxxedu.edu.cn/jsxsd/kscj/cjcx_list', postdata, headers)
+        list_tests = cjcx_rule(soup)
+        if list_tests[7] == "合格":
+            remove_szxf_flag = True
+        else:
+            remove_szxf_flag = False
+            
+        return remove_szxf_flag
 
     # 登录
     values = {}
@@ -352,6 +360,7 @@ try:
     now_course = get_nowcourse(xnxqh)
     last_course = get_lastcourse(last_xnxqh)
     en_course_num = get_en_course_num()
+    remove_szxf_flag = remove_flag()
     qudexfGPA, allxfGPA, zballGPA = get_xfGPA()
     get_xf()
 
