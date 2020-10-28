@@ -104,9 +104,9 @@ try:
                 list_test.append(res_k)
 
         if flag == True:
-            if kk ==True:
-                list_test[26] = soup.find('input', id='xm')["value"] #26 名字
-                list_test[18] = soup.find('input', id='xb')["value"] #18 性别
+            if kk == True:
+                list_test[26] = soup.find('input', id='xm')["value"]  # 26 名字
+                list_test[18] = soup.find('input', id='xb')["value"]  # 18 性别
             list_out = list_test
         else:
             # 成绩查询的数据处理
@@ -182,7 +182,7 @@ try:
         soup = get_soup(
             'https://qzjw.xxxedu.edu.cn/jsxsd/bygl/bysxx', headers)
         list_test = []
-        list_test = cjcx_rule(soup, flag=True, kk=True) 
+        list_test = cjcx_rule(soup, flag=True, kk=True)
 
         for i in (24, 26, 18, 14, 8, 10,):  # 学号、名字、性别、层次、学院、专业
             if i == 24:  # 获取年级
@@ -254,7 +254,7 @@ try:
         en_course_num = int(len(list_test) / 18)
         return en_course_num
 
-    def get_xfGPA():
+    def get_xfGPA(remove_course):
         # GPA、专业必修GPA
         values = {}
         list_test = []
@@ -267,9 +267,9 @@ try:
             'https://qzjw.xxxedu.edu.cn/jsxsd/kscj/cjcx_list', postdata, headers)
         list_test = cjcx_rule(soup)
 
-        ##移除当前学期思政实践课程，不算入GPA
-        if remove_szxf_flag:
-            num= list_test.index("思想政治理论课社会实践")
+        # 移除当前学期正常考试的课程，不算入GPA
+        for i in remove_course:
+            num = list_test.index(i[0])  # 课程名称
             del list_test[num-3:num+14]
             list_test.pop(num-3)
 
@@ -285,9 +285,18 @@ try:
 
     # 获取学分情况
 
-    def get_xf():
+    def get_xf(remove_course):
         global list_info
         values = {}
+        course_value = {
+            "创业就业导向课": 0,
+            "公共必修课": 1,
+            "公共选修课": 2,
+            "课外科技学分": 3,
+            "实践课": 4,
+            "专业必修课": 5,
+            "专业选修课": 6,
+        }
 
         # 学分情况  学习完成情况查看(性质)
         soup = get_soup(
@@ -311,8 +320,9 @@ try:
             c_test = float(list_test[i][2])  # 该类课程已取得学分
 
             list_info.append("{:g}".format(b_test))
-            if i ==4 and remove_szxf_flag :
-                c_test -= 2
+            for j in remove_course:
+                if i == course_value[j[2]]:  # 课程性质
+                    c_test -= j[1]  # 学分
 
             qude_allxf += c_test
             list_info.append("{:g}".format(c_test))
@@ -327,23 +337,28 @@ try:
 
         return 0
 
-    # 去除思政实践学分
-    def remove_flag():
+    # 记录当前学期正常考试的课程及学分
+    def remove():
         values = {}
-        values['kksj'] = xnxqh #开课时间
+        remove_course = []
+        values['kksj'] = xnxqh  # 开课时间
         values['kcxz'] = ''  # 课程性质
-        values['kcmc'] = '思想政治理论课社会实践'  # 课程名称
+        values['kcmc'] = ''  # 课程名称
         values['xsfs'] = 'max'  # 显示方式
         postdata = parse.urlencode(values).encode('utf-8')
         soup = post_soup(
             'https://qzjw.xxxedu.edu.cn/jsxsd/kscj/cjcx_list', postdata, headers)
         list_tests = cjcx_rule(soup)
-        if list_tests[7] == "合格":
-            remove_szxf_flag = True
-        else:
-            remove_szxf_flag = False
-            
-        return remove_szxf_flag
+        list_test = [list_tests[i:i+18]for i in range(0, len(list_tests), 18)]
+        for i in list_test:
+            remove_a = []
+            if i[14] == "正常考试":
+                remove_a.append(i[3])   # 课程名称
+                remove_a.append(float(i[9]))  # 学分
+                remove_a.append(i[16])  # 课程性质
+                remove_course.append(remove_a)
+
+        return remove_course
 
     # 登录
     values = {}
@@ -360,9 +375,9 @@ try:
     now_course = get_nowcourse(xnxqh)
     last_course = get_lastcourse(last_xnxqh)
     en_course_num = get_en_course_num()
-    remove_szxf_flag = remove_flag()
-    qudexfGPA, allxfGPA, zballGPA = get_xfGPA()
-    get_xf()
+    remove_course = remove()
+    qudexfGPA, allxfGPA, zballGPA = get_xfGPA(remove_course)
+    get_xf(remove_course)
 
     list_mo_info = [
         list_info[30], list_info[29], '', str(allxfGPA), 'null', str(en_course_num), 'null', str(
