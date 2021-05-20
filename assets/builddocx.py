@@ -67,11 +67,11 @@ data = {
     'major': list_info[6],
 }
 
-document = DocxTemplate('.\\assets\\demo.docx')
+document = DocxTemplate('./assets/demo.docx')
 document.render(data)
-document.save('.\\assets\\test.docx')
+document.save('./assets/test.docx')
 
-document = Document('.\\assets\\test.docx')
+document = Document('./assets/test.docx')
 
 p = document.add_paragraph()
 
@@ -265,10 +265,10 @@ for i in range(table_len+1, table_len+3):
 try :
     file_name = list_info[1] + list_info[2] + '学业完成情况表'+'.docx'
     document.save(file_name)
-    remove('.\\assets\\test.docx')
+    remove('./assets/test.docx')
     file_pa = abspath(dirname(__file__))
     print('学生学业完成情况表已生成！')
-    print('文件保存路径：'+ file_pa[:-7] +'\\'+file_name)
+    print('文件保存路径：'+ file_pa[:-7] +'/'+file_name)
 except Exception as e:
     print("[-] %s" % e)
 
