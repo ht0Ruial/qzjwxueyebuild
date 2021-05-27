@@ -247,7 +247,7 @@ try:
             lins_test = []
             cc = bb[i].find_all('td')
             try:
-                if cc[0].text.isdigit() and cc[5].text != '待修读':
+                if cc[0].text.isdigit() and cc[5].text != '待修读' and cc[5].text != '修读中':
                     for j in range(len(cc)-1):  # 减1是因为不要备注的数据
                         lins_test.append(cc[j].text)
                     lins.append(lins_test)
