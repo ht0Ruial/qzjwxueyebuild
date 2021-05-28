@@ -38,6 +38,8 @@ try:
     s = requests.session()
 
     # 登录
+
+
     def login():
         LOGIN_URL = "http://qzjw.xxxedu.edu.cn/jsxsd/xk/LoginToXk"
 
@@ -53,11 +55,13 @@ try:
 
         return 0
 
+
     def get_soup(url, headers):
         get_response = s.get(url, headers=headers)
         soup = BeautifulSoup(get_response.text, 'html.parser')
 
         return soup
+
 
     def post_soup(url, data, headers):
         get_response = s.post(url, data=data, headers=headers)
@@ -65,18 +69,6 @@ try:
 
         return soup
 
-    # 获取标签名为a，b属性的内容，存入数组
-
-    def find_tag(soup, a, b):
-        list_test = []
-        result = soup.find_all(a, b)
-        rule = re.compile(r'<[^>]+>', re.S)
-        for i in range(len(result)):
-            res_k = re.sub(r'\s', '', rule.sub('', str(result[i])))
-            if res_k != '':
-                list_test.append(res_k)
-
-        return list_test
 
     # 去除成绩列表中的不需要的数据
 
@@ -84,26 +76,23 @@ try:
         list_test = []
         list_out = []
         # 从序号到总成绩的数据
-        result = soup.find_all('tr')
-        for i in range(len(result)):
-            a = result[i].find_all('td')
-            rule = re.compile(r'<[^>]+>', re.S)
-            for j in range(0, len(a)):
-                res_k = re.sub(r'\s', '', rule.sub('', str(a[j].next)))
-                if res_k == '':
-                    res_k = "null"
-                list_test.append(res_k)
+        result = soup.find_all('td')
+        rule = re.compile(r'<[^>]+>', re.S)
+        for j in range(0, len(result)):
+            res_k = re.sub(r'\s', '', rule.sub('', str(result[j].next)))
+            if res_k == '':
+                res_k = "null"
+            list_test.append(res_k)
 
         if flag == True:
             if kk == True:
                 list_test[26] = soup.find('input', id='xm')["value"]  # 26 名字
                 list_test[18] = soup.find('input', id='xb')["value"]  # 18 性别
-            list_out = list_test
-        else:
-            list_out = list_test
-        return list_out
+
+        return list_test
 
     # 获取GPA
+
 
     def getGPA(list_test):
         gpa_dict = {
@@ -137,6 +126,7 @@ try:
 
     # 获取当前学期（选课结果查询）
 
+
     def get_xueqi():
         soup = get_soup(
             'http://qzjw.xxxedu.edu.cn/jsxsd/xkgl/xsxkjgcx', headers)
@@ -148,6 +138,8 @@ try:
         return xnxqh, last_xnxqh
 
     # 基本信息
+
+
     def get_base():
 
         global list_info
@@ -175,6 +167,7 @@ try:
 
     # 获取当前学期上课课程及学分(选课结果查询)
 
+
     def get_nowcourse(xnxqh):
         global list_info
         values = {}
@@ -196,6 +189,7 @@ try:
 
     # 获取上个学期课程及成绩(课程成绩查询)
 
+
     def get_lastcourse(last_xnxqh):
         last_course = []
         values = {}
@@ -214,6 +208,7 @@ try:
 
         return last_course
 
+
     def get_en_course_num():
         # 获取双语课程en_course_num数目
         values = {}
@@ -228,6 +223,7 @@ try:
         list_test = cjcx_rule(soup)
         en_course_num = int(len(list_test) / 18)
         return en_course_num
+
 
     def get_xfGPA(remove_course):
         values = {}
@@ -255,11 +251,12 @@ try:
                 pass
 
         # 移除当前学期正常考试的课程，不算入GPA
-        for i in remove_course:
-            for j in lins:
-                if i[0] == j[1]:  # 课程名称
-                    lins.remove(j)
-                    break
+        if len(remove_course) != 0:
+            for i in remove_course:
+                for j in lins:
+                    if i[0] == j[1]:  # 课程名称
+                        lins.remove(j)
+                        break
 
         qudexfGPA, allxfGPA = getGPA(lins)  # 取得学分GPA,所有课程学分GPA
 
@@ -272,6 +269,7 @@ try:
         return qudexfGPA, allxfGPA, zballGPA
 
     # 获取学分情况
+
 
     def get_xf(remove_course):
         global list_info
@@ -325,6 +323,8 @@ try:
         return 0
 
     # 记录当前学期正常考试的课程及学分
+
+
     def remove():
         values = {}
         remove_course = []
@@ -336,6 +336,8 @@ try:
         soup = post_soup(
             'http://qzjw.xxxedu.edu.cn/jsxsd/kscj/cjcx_list', postdata, headers)
         list_tests = cjcx_rule(soup)
+        if list_tests[0] == '未查询到数据':
+            return ''
         list_test = [list_tests[i:i+18]for i in range(0, len(list_tests), 18)]
         for i in list_test:
             remove_a = []
@@ -346,6 +348,7 @@ try:
                 remove_course.append(remove_a)
 
         return remove_course
+
 
     # 登录
     values = {}
